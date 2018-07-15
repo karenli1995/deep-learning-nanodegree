@@ -12240,14 +12240,14 @@ Default GPU Device: /gpu:0
 <span class="sd">    :return: Tuple (cell, initialize state)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># TODO: Implement Function</span>
-    <span class="c1"># LSTM cell</span>
-    <span class="n">lstm</span> <span class="o">=</span> <span class="n">BasicLSTMCell</span><span class="p">(</span><span class="n">rnn_size</span><span class="p">)</span>
+    <span class="c1">#single LSTM cell</span>
+    <span class="n">lstm_cell</span> <span class="o">=</span> <span class="n">BasicLSTMCell</span><span class="p">(</span><span class="n">rnn_size</span><span class="p">)</span>
 
-    <span class="c1"># multiple LSTM layers</span>
-    <span class="n">cell</span> <span class="o">=</span> <span class="n">MultiRNNCell</span><span class="p">([</span><span class="n">lstm</span><span class="p">])</span>
+    <span class="c1">#multiple LSTM layers</span>
+    <span class="n">stacked_rnn_cell</span> <span class="o">=</span> <span class="n">MultiRNNCell</span><span class="p">([</span><span class="n">lstm_cell</span><span class="p">])</span>
 
     <span class="c1"># initialize LSTM cell state</span>
-    <span class="n">initial_state</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">zero_state</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;initial_state&#39;</span><span class="p">)</span>
+    <span class="n">initial_state</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">stacked_rnn_cell</span><span class="o">.</span><span class="n">zero_state</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;initial_state&#39;</span><span class="p">)</span>
     
     
 <span class="c1">#     num_units = [batch_size, rnn_size]</span>
@@ -12257,7 +12257,7 @@ Default GPU Device: /gpu:0
 <span class="c1">#     initial_state = stacked_rnn_cell.zero_state(batch_size, tf.float32)</span>
 <span class="c1">#     initial_state = tf.identity(initial_state, name = &#39;initial_state&#39;)</span>
 
-    <span class="k">return</span> <span class="n">cell</span><span class="p">,</span> <span class="n">initial_state</span>
+    <span class="k">return</span> <span class="n">stacked_rnn_cell</span><span class="p">,</span> <span class="n">initial_state</span>
 
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -12310,8 +12310,11 @@ Default GPU Device: /gpu:0
 <span class="sd">    :param vocab_size: Number of words in vocabulary.</span>
 <span class="sd">    :param embed_dim: Number of embedding dimensions</span>
 <span class="sd">    :return: Embedded input.</span>
+<span class="sd">    </span>
+<span class="sd">    SOURCE: Udacity</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># TODO: Implement Function</span>
+    
     <span class="n">n_vocab</span> <span class="o">=</span> <span class="n">vocab_size</span>
     <span class="n">n_embedding</span> <span class="o">=</span> <span class="n">embed_dim</span> <span class="c1"># Number of embedding features </span>
     <span class="n">embedding</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">random_uniform</span><span class="p">((</span><span class="n">n_vocab</span><span class="p">,</span> <span class="n">n_embedding</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
@@ -12444,6 +12447,8 @@ Default GPU Device: /gpu:0
 <span class="sd">    :param vocab_size: Vocabulary size</span>
 <span class="sd">    :param embed_dim: Number of embedding dimensions</span>
 <span class="sd">    :return: Tuple (Logits, FinalState)</span>
+<span class="sd">    </span>
+<span class="sd">    SOURCE: Udacity</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># TODO: Implement Function</span>
     <span class="n">embed_input_data</span> <span class="o">=</span> <span class="n">get_embed</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">,</span> <span class="n">embed_dim</span><span class="p">)</span>
@@ -12554,11 +12559,15 @@ Default GPU Device: /gpu:0
     <span class="c1"># TODO: Implement Function</span>
     <span class="n">chars_per_batch</span> <span class="o">=</span> <span class="n">batch_size</span><span class="o">*</span><span class="n">seq_length</span>
     <span class="n">n_batches</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">int_text</span><span class="p">)</span><span class="o">//</span><span class="n">chars_per_batch</span>
+    
+    <span class="n">n_chars</span> <span class="o">=</span> <span class="n">n_batches</span><span class="o">*</span><span class="n">chars_per_batch</span>
 
-    <span class="n">input_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">int_text</span><span class="p">[:(</span><span class="n">n_batches</span> <span class="o">*</span> <span class="n">chars_per_batch</span><span class="p">)])</span>
-    <span class="n">target_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">int_text</span><span class="p">[</span><span class="mi">1</span> <span class="p">:</span> <span class="p">(</span><span class="n">n_batches</span> <span class="o">*</span> <span class="n">chars_per_batch</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+    <span class="c1"># Keep only enough characters to make full batches</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">int_text</span><span class="p">[:</span><span class="n">n_chars</span><span class="p">])</span>
+    <span class="n">target_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">int_text</span><span class="p">[</span><span class="mi">1</span><span class="p">:(</span><span class="n">n_chars</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
     <span class="n">target_data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
+    <span class="c1"># Reshape into batch_size rows</span>
     <span class="n">inputs</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">targets</span> <span class="o">=</span> <span class="n">target_data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
